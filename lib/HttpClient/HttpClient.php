@@ -27,7 +27,7 @@ abstract class HttpClient
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_AUTOREFERER => true,
-        CURLOPT_TIMEOUT => 10,
+        CURLOPT_TIMEOUT => 20,
         CURLOPT_SSL_VERIFYHOST => false,
         CURLOPT_SSL_VERIFYPEER => false,
     ];
@@ -179,6 +179,11 @@ abstract class HttpClient
 
         curl_setopt_array($this->session, $options + self::DEFAULT_CURL_OPTIONS);
         $response = curl_exec($this->session);
+        // print_r(curl_getinfo($this->session, CURLOPT_POSTFIELDS));
+
+        if (curl_errno($this->session)) {
+            throw new RequestException(curl_error($this->session));
+        }
 
         if (!$response) {
             throw new Exception('CURL failed to fetch. ' . json_encode($this->session));
@@ -186,10 +191,6 @@ abstract class HttpClient
 
         if (is_bool($response)) {
             throw new Exception('CURLOPT_RETURNTRANSFER is not set to true. Could not retrieve response data. ' . $response);
-        }
-
-        if (curl_errno($this->session)) {
-            throw new RequestException(curl_error(($this->session)));
         }
 
         $response = json_decode($response);
@@ -247,10 +248,11 @@ abstract class HttpClient
         }
 
         if (!$curlPayload && !is_string($curlPayload)) {
-            print_r($requestBody);
+            // print_r($requestBody);
             throw new ResponseMalformedException();
         }
 
+        // print_r($curlPayload);
         $response = $this->curlRequest($type, $this->url . $endpoint, $curlPayload);
         $responseObject = new $responseClass($response);
 

@@ -20,7 +20,7 @@ class CheckoutClientRequest extends RequestInterface
 
     public Order $order;
 
-    public function __construct(array | string | false $json = false)
+    public function __construct(array|string|false $json = false)
     {
         $this->requiredFields = [
             'transactionType',
@@ -28,6 +28,6 @@ class CheckoutClientRequest extends RequestInterface
             'paymentMethodDetails',
         ];
 
-        FisrvObject::__construct($json);
+        parent::__construct($json);
     }
 }
