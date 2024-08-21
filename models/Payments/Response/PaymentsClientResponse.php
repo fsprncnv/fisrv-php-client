@@ -2,11 +2,11 @@
 
 namespace Fisrv\Models;
 
+use Fisrv\Models\Traits\PaymentsResponseHead;
+
 class PaymentsClientResponse extends ResponseInterface
 {
-    public string $apiTraceId;
-
-    public string $clientRequestId;
+    use PaymentsResponseHead;
 
     public string $ipgTransactionId;
 
@@ -38,8 +38,6 @@ class PaymentsClientResponse extends ResponseInterface
 
     public string $schemeTransactionId;
 
-    public string $type;
-
     public string $securityCodeResponse;
 
     public Processor $processor;
@@ -47,10 +45,6 @@ class PaymentsClientResponse extends ResponseInterface
     public AdditionalDetails $additionalDetails;
 
     public RequestSent $requestSent;
-
-    public string $responseType;
-
-    public Error $error;
 
     public string $errorMessage;
 }

@@ -3,8 +3,11 @@
 namespace Fisrv\Payments;
 
 use Exception;
+use Fisrv\Exception\ErrorResponse;
 use Fisrv\HttpClient\HttpClient;
 use Fisrv\HttpClient\RequestType;
+use Fisrv\Models\CardLookupRequest;
+use Fisrv\Models\CardLookupResponse;
 use Fisrv\Models\PaymentsClientRequest;
 use Fisrv\Models\PaymentsClientResponse;
 
@@ -17,7 +20,7 @@ final class PaymentsClient extends HttpClient
      */
     public function __construct(array $config)
     {
-        parent::__construct('/ipp/payments-gateway/v2/payments', $config);
+        parent::__construct('/ipp/payments-gateway/v2/', $config);
     }
 
     /**
@@ -34,7 +37,7 @@ final class PaymentsClient extends HttpClient
         }
 
         $request->requestType = 'PaymentCardSaleTransaction';
-        $response = $this->buildRequest(RequestType::POST, $this->endpointRoot, $request, PaymentsClientResponse::class);
+        $response = $this->buildRequest(RequestType::POST, $this->endpointRoot . 'payments/', $request, PaymentsClientResponse::class);
 
         if (!$response instanceof PaymentsClientResponse) {
             throw new Exception('Response is of malformed type');
@@ -54,12 +57,44 @@ final class PaymentsClient extends HttpClient
     public function returnTransaction(PaymentsClientRequest $request, string $transactionId): PaymentsClientResponse
     {
         $request->requestType = 'ReturnTransaction';
-        $response = $this->buildRequest(RequestType::POST, $this->endpointRoot . '/' . $transactionId, $request, PaymentsClientResponse::class);
+        $response = $this->buildRequest(RequestType::POST, $this->endpointRoot . 'payments/' . $transactionId, $request, PaymentsClientResponse::class);
 
         if (!$response instanceof PaymentsClientResponse) {
             throw new Exception('Response is of malformed type');
         }
 
         return $response;
+    }
+
+    public function cardInfoLookup(CardLookupRequest $request): CardLookupResponse
+    {
+        $response = $this->buildRequest(RequestType::POST, $this->endpointRoot . 'card-information', $request, CardLookupResponse::class);
+
+        if (!$response instanceof CardLookupResponse) {
+            throw new Exception('Response is of malformed type');
+        }
+
+        return $response;
+    }
+
+    public function pingHealthCheck(): string|bool|ErrorResponse
+    {
+        try {
+            $response = $this->cardInfoLookup(new CardLookupRequest([
+                "paymentCard" => [
+                    "number" => '5424180279791732'
+                ],
+            ]));
+        } catch (ErrorResponse $e) {
+            return $e;
+        } catch (\Throwable $th) {
+            return $th->getMessage();
+        }
+
+        if ($response->httpCode !== 200) {
+            return json_encode($response);
+        }
+
+        return true;
     }
 }

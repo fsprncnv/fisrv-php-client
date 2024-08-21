@@ -94,12 +94,15 @@ abstract class FisrvObject
                     $value = $nestedObj;
                 } catch (Error $th) {
                     /** Handle lists */
-                    if (!array_is_list($value)) {
+                    if (!array_is_list($value) && !is_numeric(ucfirst($key))) {
                         new InvalidFieldWarning($key, $this::class, $th->getMessage());
                         continue;
                     }
 
-                    $className = rtrim(self::NAMESPACE_PREFIX . ucfirst($key), 's');
+                    $className = self::NAMESPACE_PREFIX . ucfirst($key);
+                    if (!class_exists($className)) {
+                        $className = rtrim($className, 's');
+                    }
 
                     foreach ($value as &$item) {
                         $item = new $className($item, $this->isResponseContent);
