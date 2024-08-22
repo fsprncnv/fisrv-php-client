@@ -8,6 +8,7 @@ use Fisrv\HttpClient\HttpClient;
 use Fisrv\HttpClient\RequestType;
 use Fisrv\Models\CardLookupRequest;
 use Fisrv\Models\CardLookupResponse;
+use Fisrv\Models\HealthCheckResponse;
 use Fisrv\Models\PaymentsClientRequest;
 use Fisrv\Models\PaymentsClientResponse;
 
@@ -77,7 +78,7 @@ final class PaymentsClient extends HttpClient
         return $response;
     }
 
-    public function pingHealthCheck(): string|bool|ErrorResponse
+    public function reportHealthCheck(): HealthCheckResponse
     {
         try {
             $response = $this->cardInfoLookup(new CardLookupRequest([
@@ -85,16 +86,12 @@ final class PaymentsClient extends HttpClient
                     "number" => '5424180279791732'
                 ],
             ]));
+            unset($response->cardDetails);
+            unset($response->type);
+
+            return new HealthCheckResponse(json_encode($response));
         } catch (ErrorResponse $e) {
-            return $e;
-        } catch (\Throwable $th) {
-            return $th->getMessage();
+            return new HealthCheckResponse(json_encode($e->response));
         }
-
-        if ($response->httpCode !== 200) {
-            return json_encode($response);
-        }
-
-        return true;
     }
 }
