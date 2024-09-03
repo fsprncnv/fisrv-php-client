@@ -70,8 +70,6 @@ final class CheckoutClient extends HttpClient
      */
     public function createCheckout(CheckoutClientRequest $request): CreateCheckoutResponse
     {
-        /** Floor transaction amount in case it got deformed */
-        $request->transactionAmount->total = floor($request->transactionAmount->total * 100) / 100;
         $response = $this->buildRequest(RequestType::POST, $this->endpointRoot, $request, CreateCheckoutResponse::class);
 
         if (!$response instanceof CreateCheckoutResponse) {

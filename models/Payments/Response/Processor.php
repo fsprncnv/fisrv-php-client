@@ -17,4 +17,6 @@ class Processor extends FisrvObject
     public string $merchantAdviceCodeIndicator;
 
     public AvsResponse $avsResponse;
+
+    public string $taxRefundData;
 }

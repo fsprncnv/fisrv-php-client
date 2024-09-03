@@ -70,10 +70,8 @@ abstract class HttpClient
         $this->session = curl_init();
         self::validateApiConfigParams();
 
-        if (version_compare(phpversion(), '7.1', '>=')) {
-            ini_set('precision', 17);
-            ini_set('serialize_precision', -1);
-        }
+        ini_set('precision', 8);
+        ini_set('serialize_precision', -1);
     }
 
     private function whichUserAgent(): string
