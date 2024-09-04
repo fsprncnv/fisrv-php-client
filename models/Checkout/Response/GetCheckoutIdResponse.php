@@ -24,6 +24,8 @@ class GetCheckoutIdResponse extends ResponseInterface
 
     public PaymentMethodUsed $paymentMethodUsed;
 
+    public TransactionFailure $transactionFailure;
+
     /** @var array<Error> $errors */
     public array $errors;
 }
