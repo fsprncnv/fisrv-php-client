@@ -6,7 +6,7 @@ class TokenBasedTransaction extends FisrvObject
 {
     public string $value;
 
-    public string $transactionSequence;
+    public TransactionSequence $transactionSequence;
 
-    public string $cardNumber;
+    public string $schemeTransactionId;
 }

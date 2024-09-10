@@ -2,13 +2,15 @@
 
 namespace Fisrv\Models;
 
-use Fisrv\Models\Traits\Token;
-
 class CreateToken extends FisrvObject
 {
-    use Token;
+    public string $customTokenValue;
 
     public bool $declineDuplicateToken;
+
+    public bool $declineDuplicates;
+
+    public bool $reusable;
 
     public ToBeUsedFor $toBeUsedFor;
 

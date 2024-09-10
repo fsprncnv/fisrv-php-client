@@ -10,8 +10,6 @@ class PaymentMethodDetails extends FisrvObject
 
     public PayPal $payPal;
 
-    public TokenBasedTransaction $tokenBasedTransaction;
-
     public PaymentCard $paymentCard;
 
     public string $paymentMethodType;
