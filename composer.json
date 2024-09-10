@@ -36,6 +36,9 @@
     ],
     "test": [
       "vendor/bin/phpunit tests"
+    ],
+    "run-all": [
+      "composer analyse && composer fix-format && composer format && composer test"
     ]
   }
 }
