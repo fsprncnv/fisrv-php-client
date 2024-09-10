@@ -12,7 +12,7 @@ class PaymentsClientResponse extends ResponseInterface
 
     public string $orderId;
 
-    public string $transactionType;
+    public TransactionType $transactionType;
 
     public CreateToken $paymentToken;
 

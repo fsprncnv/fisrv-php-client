@@ -14,7 +14,7 @@ class GetPaymentLinkDetailsResponse extends ResponseInterface
 
     public ApprovedAmount $approvedAmount;
 
-    public string $transactionType;
+    public TransactionType $transactionType;
 
     public string $transactionStatus;
 

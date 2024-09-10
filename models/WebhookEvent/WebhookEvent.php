@@ -8,6 +8,7 @@ use Fisrv\Models\IpgTransactionDetails;
 use Fisrv\Models\PaymentMethodUsed;
 use Fisrv\Models\TokenDetails;
 use Fisrv\Models\TransactionStatus;
+use Fisrv\Models\TransactionType;
 
 class WebhookEvent extends FisrvObject
 {
@@ -19,7 +20,7 @@ class WebhookEvent extends FisrvObject
 
     public string $orderId;
 
-    public string $transactionType;
+    public TransactionType $transactionType;
 
     public ApprovedAmount $approvedAmount;
 

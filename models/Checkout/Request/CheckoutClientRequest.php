@@ -6,7 +6,7 @@ class CheckoutClientRequest extends RequestInterface
 {
     public TransactionOrigin $transactionOrigin;
 
-    public string $transactionType;
+    public TransactionType $transactionType;
 
     public TransactionAmount $transactionAmount;
 

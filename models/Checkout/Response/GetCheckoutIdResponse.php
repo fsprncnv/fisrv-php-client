@@ -10,7 +10,7 @@ class GetCheckoutIdResponse extends ResponseInterface
 
     public string $orderId;
 
-    public string $transactionType;
+    public TransactionType $transactionType;
 
     public ApprovedAmount $approvedAmount;
 
