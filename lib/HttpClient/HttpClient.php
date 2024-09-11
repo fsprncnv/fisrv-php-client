@@ -147,7 +147,7 @@ abstract class HttpClient
      *
      * @return string Response object containing data and trace ID
      */
-    private function curlRequest(RequestType $type, string $url, string $request = ''): string
+    private function curlRequest(RequestType $type, string $url, string $request = '', bool $verbose = false): string
     {
         $headers = [];
 
@@ -177,7 +177,6 @@ abstract class HttpClient
 
         curl_setopt_array($this->session, $options + self::DEFAULT_CURL_OPTIONS);
         $response = curl_exec($this->session);
-        // print_r(curl_getinfo($this->session, CURLOPT_POSTFIELDS));
 
         if (curl_errno($this->session)) {
             throw new RequestException(curl_error($this->session));
@@ -195,6 +194,11 @@ abstract class HttpClient
 
         $response->httpCode = (int) curl_getinfo($this->session, CURLINFO_RESPONSE_CODE);
         $response->traceId = $headers['trace-id'] ?? null;
+
+        if ($verbose) {
+            $requestLog = json_encode($options, JSON_UNESCAPED_SLASHES);
+            $response->requestLog = $requestLog ? json_encode($requestLog) : '';
+        }
 
         $responseJson = json_encode($response);
 
@@ -233,7 +237,7 @@ abstract class HttpClient
      *
      * @return ResponseInterface Response object
      */
-    protected function buildRequest(RequestType $type, string $endpoint, ?RequestInterface $requestBody = null, ?string $responseClass = null): ResponseInterface
+    protected function buildRequest(RequestType $type, string $endpoint, ?RequestInterface $requestBody = null, ?string $responseClass = null, bool $verbose = false): ResponseInterface
     {
         if (is_null($requestBody)) {
             $curlPayload = '';
@@ -251,7 +255,7 @@ abstract class HttpClient
         }
 
         // print_r($curlPayload);
-        $response = $this->curlRequest($type, $this->url . $endpoint, $curlPayload);
+        $response = $this->curlRequest($type, $this->url . $endpoint, $curlPayload, $verbose);
         $responseObject = new $responseClass($response);
 
         if (!$responseObject instanceof ResponseInterface) {

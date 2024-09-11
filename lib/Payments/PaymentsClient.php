@@ -67,9 +67,9 @@ final class PaymentsClient extends HttpClient
         return $response;
     }
 
-    public function cardInfoLookup(CardLookupRequest $request): CardLookupResponse
+    public function cardInfoLookup(CardLookupRequest $request, bool $verbose = false): CardLookupResponse
     {
-        $response = $this->buildRequest(RequestType::POST, $this->endpointRoot . 'card-information', $request, CardLookupResponse::class);
+        $response = $this->buildRequest(RequestType::POST, "{$this->endpointRoot}card-information", $request, CardLookupResponse::class, true);
 
         if (!$response instanceof CardLookupResponse) {
             throw new Exception('Response is of malformed type');
@@ -78,14 +78,14 @@ final class PaymentsClient extends HttpClient
         return $response;
     }
 
-    public function reportHealthCheck(): HealthCheckResponse
+    public function reportHealthCheck(bool $verbose = false): HealthCheckResponse
     {
         try {
             $response = $this->cardInfoLookup(new CardLookupRequest([
                 "paymentCard" => [
                     "number" => '5424180279791732'
                 ],
-            ]));
+            ]), true);
             unset($response->cardDetails);
             unset($response->type);
 

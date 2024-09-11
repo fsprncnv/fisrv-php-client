@@ -8,6 +8,8 @@ abstract class ResponseInterface extends FisrvObject
 
     public int $httpCode;
 
+    public string $requestLog;
+
     /**
      * Constructor
      *
