@@ -95,7 +95,7 @@ abstract class FisrvObject
                 } catch (Error $th) {
                     /** Handle lists */
                     if (!array_is_list($value) && !is_numeric(ucfirst($key))) {
-                        new InvalidFieldWarning($key, $this::class, $th->getMessage());
+                        new InvalidFieldWarning($key, $this::class, $th->getMessage(), json_encode($value));
                         continue;
                     }
 

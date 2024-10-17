@@ -12,6 +12,8 @@ class PaymentCard extends FisrvObject
 
     public string $brand;
 
+    public string $fundingCardNumber;
+
     public string $securityCode;
 
     public ExpiryDate $expiryDate;
