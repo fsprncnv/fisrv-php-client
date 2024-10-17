@@ -11,6 +11,8 @@ use Fisrv\Models\FisrvObject;
 use Fisrv\Models\RequestInterface;
 use Fisrv\Models\ResponseInterface;
 use Fisrv\Models\ValidationInterface;
+use SebastianBergmann\Type\ObjectType;
+use stdClass;
 
 abstract class HttpClient
 {
@@ -170,7 +172,7 @@ abstract class HttpClient
         switch ($type) {
             case RequestType::POST:
                 $options[CURLOPT_POST] = true;
-                // no break
+            // no break
             case RequestType::PATCH:
                 $options[CURLOPT_POSTFIELDS] = $request;
         }
@@ -191,6 +193,10 @@ abstract class HttpClient
         }
 
         $response = json_decode($response);
+
+        if (!$response instanceof stdClass && is_string($response)) {
+            $response = json_decode($response);
+        }
 
         $response->httpCode = (int) curl_getinfo($this->session, CURLINFO_RESPONSE_CODE);
         $response->traceId = $headers['trace-id'] ?? null;
