@@ -1,9 +1,10 @@
 <?php
 
+namespace Fisrv\Payments;
+
 use Fisrv\Models\HealthCheckResponse;
 use Fisrv\Models\PaymentsClientRequest;
 use Fisrv\Models\PaymentsClientResponse;
-use Fisrv\Payments\PaymentsClient;
 use PHPUnit\Framework\TestCase;
 
 class PaymentsTest extends TestCase

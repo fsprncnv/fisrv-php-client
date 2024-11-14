@@ -1,5 +1,7 @@
 <?php
 
+namespace Fisrv\Checkout;
+
 use Fisrv\Models\WebhookEvent\WebhookEvent;
 use PHPUnit\Framework\TestCase;
 

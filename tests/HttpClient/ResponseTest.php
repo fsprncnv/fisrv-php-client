@@ -1,6 +1,9 @@
 <?php
 
+namespace Fisrv\HttpClient;
+
 use Fisrv\Checkout\CheckoutClient;
+use Fisrv\Environment;
 use Fisrv\Models\CheckoutSettings;
 use PHPUnit\Framework\TestCase;
 
@@ -10,18 +13,7 @@ class ResponseTest extends TestCase
 
     protected function setUp(): void
     {
-        $env = parse_ini_file('.env');
-
-        if (!$env) {
-            exit;
-        }
-
-        $this->client = new CheckoutClient([
-            'is_prod' => false,
-            'api_key' => $env['api_key'] . 's',
-            'api_secret' => $env['api_secret'],
-            'store_id' => $env['store_id']
-        ]);
+        $this->client = new CheckoutClient(Environment::getClientConfig(false, 'BAD_API_KEY'));
     }
 
     public function testFieldStringValidationOnRequest(): void

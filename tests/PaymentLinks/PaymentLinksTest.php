@@ -1,9 +1,11 @@
 <?php
 
+namespace Fisrv\PaymentLinks;
+
+use Fisrv\Environment;
 use Fisrv\Models\CheckoutClientRequest;
 use Fisrv\Models\GetPaymentLinkDetailsResponse;
 use Fisrv\Models\PaymentsLinksCreatedResponse;
-use Fisrv\PaymentLinks\PaymentLinksClient;
 use PHPUnit\Framework\TestCase;
 
 class PaymentLinksTest extends TestCase
@@ -52,18 +54,7 @@ class PaymentLinksTest extends TestCase
 
     protected function setUp(): void
     {
-        $env = parse_ini_file('.env');
-
-        if (!$env) {
-            exit;
-        }
-
-        $this->client = new PaymentLinksClient([
-            'is_prod' => false,
-            'api_key' => $env['api_key'],
-            'api_secret' => $env['api_secret'],
-            'store_id' => $env['store_id']
-        ]);
+        $this->client = new PaymentLinksClient(Environment::getClientConfig());
     }
 
     public function testCreatePaymentLinkSuccess(): void

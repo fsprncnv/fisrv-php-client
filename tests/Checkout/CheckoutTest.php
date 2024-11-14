@@ -1,6 +1,8 @@
 <?php
 
-use Fisrv\Checkout\CheckoutClient;
+namespace Fisrv\Checkout;
+
+use Fisrv\Environment;
 use Fisrv\Exception\RequiredFieldMissingException;
 use Fisrv\Models\CheckoutClientRequest;
 use Fisrv\Models\CreateCheckoutResponse;
@@ -17,11 +19,7 @@ class CheckoutTest extends TestCase
         'transactionAmount' => [
             'total' => 130,
             'currency' => 'EUR',
-            'components' => [
-                'subtotal' => 130,
-                'vatAmount' => 0,
-                'shipping' => 0,
-            ]
+
         ],
         'checkoutSettings' => [
             'locale' => 'en_GB',
@@ -54,18 +52,7 @@ class CheckoutTest extends TestCase
 
     protected function setUp(): void
     {
-        $env = parse_ini_file('.env');
-
-        if (!$env) {
-            exit;
-        }
-
-        $this->client = new CheckoutClient([
-            'is_prod' => false,
-            'api_key' => $env['api_key'],
-            'api_secret' => $env['api_secret'],
-            'store_id' => $env['store_id']
-        ]);
+        $this->client = new CheckoutClient(Environment::getClientConfig());
     }
 
     public function testMissingFieldException(): void
@@ -94,6 +81,7 @@ class CheckoutTest extends TestCase
         $req = new CheckoutClientRequest(self::paymentLinksRequestContent);
 
         $res = $this->client->createCheckout($req);
+        echo $res;
         $this->assertInstanceOf(CreateCheckoutResponse::class, $res, "Response schema is malformed");
         $this->assertObjectHasProperty("checkout", $res, "Response misses field (checkout)");
     }
