@@ -15,7 +15,7 @@ use stdClass;
 
 abstract class HttpClient
 {
-    private const VERSION = '0.0.1';
+    private const VERSION = '1.0.0';
 
     private const DOMAIN = 'https://prod.emea.api.fiservapps.com/';
 
@@ -77,7 +77,7 @@ abstract class HttpClient
 
     private function whichUserAgent(): string
     {
-        return 'FisrvPHPClient/' . self::VERSION . ' ' . ($this->config['user'] ?? '');
+        return 'FiservPhpClient/' . self::VERSION . ' ' . ($this->config['user'] ?? '');
     }
 
     /**
