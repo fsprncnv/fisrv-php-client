@@ -25,7 +25,7 @@ class CheckoutClientRequest extends RequestInterface
         $this->requiredFields = [
             'transactionType',
             'transactionAmount',
-            'paymentMethodDetails',
+            'checkoutSettings',
         ];
 
         parent::__construct($json);

@@ -9,4 +9,6 @@ class AuthenticationPreferences extends FisrvObject
     public ScaExemptionType $scaExemptionType;
 
     public bool $skipTra;
+
+    public bool $authenticateTransaction;
 }

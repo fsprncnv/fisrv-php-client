@@ -24,14 +24,6 @@ class CheckoutTest extends TestCase
             'currency' => 'EUR',
 
         ],
-        'checkoutSettings' => [
-            'locale' => 'en_GB',
-            'webHooksUrl' => 'https://www.success.com/',
-            'redirectBackUrls' => [
-                'successUrl' => "https://www.success.com/",
-                'failureUrl' => "https://www.failureexample.com"
-            ]
-        ],
         'paymentMethodDetails' => [
             'cards' => [
                 'authenticationPreferences' => [
@@ -47,8 +39,13 @@ class CheckoutTest extends TestCase
             ],
             'sepaDirectDebit' => ['transactionSequenceType' => 'SINGLE']
         ],
-        'merchantTransactionId' => 'AB-1234',
-        'storeId' => '72305408',
+        'checkoutSettings' => [
+            'locale' => 'en_GB',
+            'redirectBackUrls' => [
+                'successUrl' => "https://www.success.com/",
+                'failureUrl' => "https://www.failureexample.com"
+            ]
+        ]
     ];
 
     private CheckoutClient $client;
@@ -71,12 +68,9 @@ class CheckoutTest extends TestCase
     public function testNestedMissingFieldException(): void
     {
         $this->expectExceptionObject(new RequiredFieldMissingException("toBeUsedFor", CreateToken::class));
-
         $missingFieldContent = self::paymentLinksRequestContent;
         unset($missingFieldContent["paymentMethodDetails"]["cards"]["createToken"]["toBeUsedFor"]);
-
-        $temp = new CheckoutClientRequest($missingFieldContent);
-        echo $temp;
+        new CheckoutClientRequest($missingFieldContent);
     }
 
     public function testPostCheckoutsSuccess(): void
@@ -84,7 +78,6 @@ class CheckoutTest extends TestCase
         $req = new CheckoutClientRequest(self::paymentLinksRequestContent);
 
         $res = $this->client->createCheckout($req);
-        echo $res;
         $this->assertInstanceOf(CreateCheckoutResponse::class, $res, "Response schema is malformed");
         $this->assertObjectHasProperty("checkout", $res, "Response misses field (checkout)");
     }
@@ -92,26 +85,22 @@ class CheckoutTest extends TestCase
     public function testOrderWithSubcomponents(): void
     {
         $total = 130;
-
         $req = new CheckoutClientRequest(self::paymentLinksRequestContent);
         $req->transactionAmount->total = $total;
         $req->transactionAmount->components = new Components();
         $req->transactionAmount->components->subtotal = $total - 0.99;
         $req->transactionAmount->components->vatAmount = 0;
         $req->transactionAmount->components->shipping = 0.99;
-
         $res = $this->client->createCheckout($req);
         $id = $res->checkout->checkoutId;
-
         $details = $this->client->getCheckoutById($id);
         $total_actual = $details->approvedAmount->total;
-
         $this->assertEquals($total, $total_actual);
     }
 
     public function testGetCheckoutIdSuccess(): void
     {
-        $res = $this->client->getCheckoutById('IUBsFE');
+        $res = $this->client->getCheckoutById('AW2_Eu');
         $this->assertInstanceOf(GetCheckoutIdResponse::class, $res);
         $this->assertObjectHasProperty("storeId", $res, "Response misses field (storeId)");
     }
@@ -156,9 +145,9 @@ class CheckoutTest extends TestCase
         $response = $this->client->refundCheckout(new PaymentsClientRequest([
             'transactionAmount' => [
                 'total' => 1,
-                'currency' => 'USD'
+                'currency' => 'EUR'
             ],
-        ]), 'EDZjCI');
+        ]), 'z1omb1');
 
         $this->assertInstanceOf(PaymentsClientResponse::class, $response);
     }

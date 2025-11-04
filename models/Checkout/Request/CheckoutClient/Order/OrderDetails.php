@@ -15,4 +15,6 @@ class OrderDetails extends FisrvObject
     public Basket $basket;
 
     public Billing $billing;
+
+    public Shipping $shipping;
 }

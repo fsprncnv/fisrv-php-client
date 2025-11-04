@@ -8,4 +8,5 @@ enum PreSelectedPaymentMethod: string
     case PAYPAL = 'PayPal';
     case GOOGLEPAY = 'Googlepay';
     case APPLE = 'Applepay';
+    case BIZUM = 'Bizum';
 }

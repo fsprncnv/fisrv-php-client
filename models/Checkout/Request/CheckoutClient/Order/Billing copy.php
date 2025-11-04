@@ -4,7 +4,7 @@ namespace Fisrv\Models;
 
 use Fisrv\Models\Traits\AddressPerson;
 
-class Billing extends FisrvObject
+class Shipping extends FisrvObject
 {
     use AddressPerson;
 }

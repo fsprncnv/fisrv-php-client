@@ -48,8 +48,6 @@ class PaymentLinksTest extends TestCase
         'merchantTransactionId' => 'AB-1234',
     ];
 
-    private string $paymentLinkId = 'IUBsFE';
-
     private PaymentLinksClient $client;
 
     protected function setUp(): void
@@ -66,7 +64,7 @@ class PaymentLinksTest extends TestCase
 
     public function testGetPaymentLinkDetails(): void
     {
-        $res = $this->client->getPaymentLinkDetails($this->paymentLinkId);
+        $res = $this->client->getPaymentLinkDetails("jnetGA");
         $this->assertInstanceOf(GetPaymentLinkDetailsResponse::class, $res);
     }
 }

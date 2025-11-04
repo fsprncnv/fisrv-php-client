@@ -10,6 +10,8 @@ class PaymentMethodDetails extends FisrvObject
 
     public PayPal $payPal;
 
+    public Ideal $ideal;
+
     public PaymentCard $paymentCard;
 
     public string $paymentMethodType;

@@ -33,9 +33,21 @@ class ResponseTest extends TestCase
         $settings->redirectBackUrls->validate();
     }
 
+    public function testHttpClient(): void
+    {
+        $response = $this->client->curlRequest(RequestType::GET, 'https://jsonplaceholder.typicode.com/posts/1');
+        $this->assertStringContainsString("\"httpCode\":200", $response);
+    }
+
     public function testErrorResponseGeneric(): void
     {
         $this->expectExceptionMessage('No valid API key or credential has been provided in the request.');
         $this->client->createCheckout(CheckoutClient::createBasicCheckoutRequest(0, 'https://www.successexample.com', 'https://www.successexample.com'));
+    }
+
+    public function testWAFBlockResponseCaseNumber(): void
+    {
+        $caseNumber = $this->client->extractSecurityCaseNumber("<HTML><HEAD><base href=\"/\" /><script type=\"text/javascript\">var _event_transid='2218210971';</script>");
+        $this->assertEquals('2218210971', $caseNumber);
     }
 }

@@ -15,7 +15,7 @@ use stdClass;
 
 abstract class HttpClient
 {
-    private const VERSION = '1.0.1';
+    private const VERSION = '1.0.3';
 
     private const DOMAIN = 'https://prod.emea.api.fiservapps.com/';
 
@@ -26,10 +26,7 @@ abstract class HttpClient
 
     private const DEFAULT_CURL_OPTIONS = [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_AUTOREFERER => true,
         CURLOPT_TIMEOUT => 20,
-        CURLOPT_SSL_VERIFYHOST => false,
         CURLOPT_SSL_VERIFYPEER => false,
     ];
 
@@ -70,39 +67,11 @@ abstract class HttpClient
         $this->url = $config['is_prod'] ? self::DOMAIN : self::DOMAIN . '/sandbox';
         $this->session = curl_init();
         self::validateApiConfigParams();
-
-        ini_set('precision', 8);
-        ini_set('serialize_precision', -1);
     }
 
     private function whichUserAgent(): string
     {
         return 'FiservPhpClient/' . self::VERSION . ' ' . ($this->config['user'] ?? '');
-    }
-
-    /**
-     * Create an header object that conforms to API specs.
-     * A message signature is created by wrapping a hash (SHA256) calculation with the secret key.
-     *
-     * @param string $content Request body for POST/PUT requests. May be empty (but not null).
-     * @return array<string> Array representing the header
-     */
-    private function authenticate(string $content): array
-    {
-        $clientRequestId = self::generateUuid();
-        $timestamp = self::generateTimestamp();
-        $message = $this->config['api_key'] . $clientRequestId . $timestamp . $content;
-        $requestHeaders = self::DEFAULT_HEADERS;
-        $requestHeaders['Api-Key'] = $this->config['api_key'];
-        $requestHeaders['Timestamp'] = $timestamp;
-        $requestHeaders['Client-Request-Id'] = $clientRequestId;
-        $requestHeaders['Message-Signature'] = self::calculcateMessageSignature($message);
-        $headers = [];
-        foreach ($requestHeaders as $key => $value) {
-            $headers[] = $key . ': ' . $value;
-        }
-
-        return $headers;
     }
 
     private function calculcateMessageSignature(string $content): string
@@ -148,16 +117,24 @@ abstract class HttpClient
      *
      * @return string Response object containing data and trace ID
      */
-    private function curlRequest(RequestType $type, string $url, string $request = '', bool $verbose = false): string
+    public function curlRequest(RequestType $type, string $url, string $request = '', bool $verbose = false): string
     {
         $headers = [];
-
+        $clientRequestId = self::generateUuid();
+        $timestamp = self::generateTimestamp();
+        $message = $this->config['api_key'] . $clientRequestId . $timestamp . $request;
         $options = [
+            CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => false,
             CURLOPT_URL => $url,
-            CURLOPT_CUSTOMREQUEST => $type->value,
             CURLOPT_USERAGENT => self::whichUserAgent(),
-            CURLOPT_HTTPHEADER => self::authenticate($request),
+            CURLOPT_HTTPHEADER => self::DEFAULT_HEADERS + [
+                'Content-Type: application/json',
+                'Client-Request-Id: ' . $clientRequestId,
+                'Api-Key: ' . $this->config['api_key'],
+                'Timestamp: ' . $timestamp,
+                'Message-Signature: ' . self::calculcateMessageSignature($message)
+            ],
             CURLOPT_HEADERFUNCTION => function ($curl, $header) use (&$headers) {
                 if (str_contains($header, ':')) {
                     list($key, $value) = explode(':', $header, 2);
@@ -167,7 +144,6 @@ abstract class HttpClient
                 return strlen($header);
             }
         ];
-
         switch ($type) {
             case RequestType::POST:
                 $options[CURLOPT_POST] = true;
@@ -175,43 +151,48 @@ abstract class HttpClient
             case RequestType::PATCH:
                 $options[CURLOPT_POSTFIELDS] = $request;
         }
-
         curl_setopt_array($this->session, $options + self::DEFAULT_CURL_OPTIONS);
         $response = curl_exec($this->session);
-
+        // print_r("\nResponse: " . $response);
         if (curl_errno($this->session)) {
             throw new RequestException(curl_error($this->session));
         }
-
         if (!$response) {
             throw new Exception('CURL failed to fetch. ' . json_encode($this->session));
         }
-
         if (is_bool($response)) {
             throw new Exception('CURLOPT_RETURNTRANSFER is not set to true. Could not retrieve response data. ' . $response);
         }
-
+        $WAFcaseNumber = self::extractSecurityCaseNumber($response);
+        if ($WAFcaseNumber) {
+            throw new Exception('Request was blocked by cloud security. Please reach out to support with this case number: ' . $WAFcaseNumber);
+        }
         $response = json_decode($response);
-
         if (!$response instanceof stdClass && is_string($response)) {
             $response = json_decode($response);
         }
-
         $response->httpCode = (int) curl_getinfo($this->session, CURLINFO_RESPONSE_CODE);
         $response->traceId = $headers['trace-id'] ?? null;
-
         if ($verbose) {
             $requestLog = json_encode($options, JSON_UNESCAPED_SLASHES);
             $response->requestLog = $requestLog ? json_encode($requestLog) : '';
         }
-
         $responseJson = json_encode($response);
-
         if (!$responseJson) {
             throw new Exception('CURL Request response could not be parsed: ' . (string) $response);
         }
 
         return $responseJson;
+    }
+
+    public static function extractSecurityCaseNumber(string $html): string|null
+    {
+        $pattern = "/var\s+_event_transid\s*=\s*'(\d+)'/";
+        if (preg_match($pattern, $html, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 
     /**
@@ -247,26 +228,28 @@ abstract class HttpClient
         if (is_null($requestBody)) {
             $curlPayload = '';
         }
-
         if ($requestBody instanceof RequestInterface) {
             $this->validateRequest($requestBody);
             $requestBody->storeId = strval($this->config['store_id']);
             $curlPayload = json_encode($requestBody);
         }
-
         if (!$curlPayload && !is_string($curlPayload)) {
-            // print_r($requestBody);
             throw new ResponseMalformedException();
         }
-
-        // print_r($curlPayload);
-        $response = $this->curlRequest($type, $this->url . $endpoint, $curlPayload, $verbose);
+        // print_r("Request: " . $curlPayload);
+        try {
+            $response = $this->curlRequest($type, $this->url . $endpoint, $curlPayload, $verbose);
+        } catch (\Throwable $th) {
+            print_r("\nCURL exception: " . $th->getMessage());
+            exit();
+        }
         $responseObject = new $responseClass($response);
-
         if (!$responseObject instanceof ResponseInterface) {
             throw new ResponseMalformedException();
         }
-
+        if (!isset($responseObject->httpCode)) {
+            throw new ErrorResponse('HTTP request did not responsd with JSON.');
+        }
         if ($responseObject->httpCode !== 200 && $responseObject->httpCode !== 201) {
             throw new ErrorResponse($responseObject);
         }
@@ -286,7 +269,6 @@ abstract class HttpClient
             if ($value instanceof FisrvObject) {
                 self::validateRequest($value);
             }
-
             if ($value instanceof ValidationInterface) {
                 $value->validate();
             }
