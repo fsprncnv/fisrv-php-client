@@ -15,7 +15,7 @@ use stdClass;
 
 abstract class HttpClient
 {
-    private const VERSION = '1.0.4';
+    private const VERSION = '1.0.5';
 
     private const DOMAIN = 'https://prod.emea.api.fiservapps.com/';
 
@@ -35,7 +35,9 @@ abstract class HttpClient
         'api_key',
         'api_secret',
         'store_id',
-        'user'
+        'pluginversion',
+        'shopsystem',
+        'shopversion',
     ];
 
     protected string $endpointRoot;
@@ -67,11 +69,6 @@ abstract class HttpClient
         $this->url = $config['is_prod'] ? self::DOMAIN : self::DOMAIN . '/sandbox';
         $this->session = curl_init();
         self::validateApiConfigParams();
-    }
-
-    private function whichUserAgent(): string
-    {
-        return 'FiservPhpClient/' . self::VERSION . ' ' . ($this->config['user'] ?? '');
     }
 
     private function calculcateMessageSignature(string $content): string
@@ -119,6 +116,10 @@ abstract class HttpClient
      */
     public function curlRequest(RequestType $type, string $url, string $request = '', bool $verbose = false): string
     {
+        $pluginVersion = $this->config['pluginversion'];
+        $shopSystemName = $this->config['shopsystem'];
+        $shopSystemVersion = $this->config['shopversion'];
+
         $headers = [];
         $clientRequestId = self::generateUuid();
         $timestamp = self::generateTimestamp();
@@ -127,8 +128,9 @@ abstract class HttpClient
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => false,
             CURLOPT_URL => $url,
-            CURLOPT_USERAGENT => self::whichUserAgent(),
+            CURLOPT_USERAGENT => 'ShoppingCartPlugin/' . $pluginVersion . ' (' . $shopSystemName . '/' . $shopSystemVersion . '; ClientLib/FiservPhpClient-' . self::VERSION . '; PHP/' . phpversion() . ')',
             CURLOPT_HTTPHEADER => self::DEFAULT_HEADERS + [
+                'X-ShopPlugin: Fiserv_' . $shopSystemName . '_' . $pluginVersion,
                 'Content-Type: application/json',
                 'Client-Request-Id: ' . $clientRequestId,
                 'Api-Key: ' . $this->config['api_key'],
@@ -147,7 +149,7 @@ abstract class HttpClient
         switch ($type) {
             case RequestType::POST:
                 $options[CURLOPT_POST] = true;
-                // no break
+            // no break
             case RequestType::PATCH:
                 $options[CURLOPT_POSTFIELDS] = $request;
         }
