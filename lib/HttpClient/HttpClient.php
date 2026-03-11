@@ -17,7 +17,7 @@ abstract class HttpClient
 {
     private const VERSION = '1.0.5';
 
-    private const DOMAIN = 'https://prod.emea.api.fiservapps.com/';
+    private const DOMAIN = 'https://prod.emea.api.fiservapps.com';
 
     private const DEFAULT_HEADERS = [
         'Content-Type' => 'application/json',
