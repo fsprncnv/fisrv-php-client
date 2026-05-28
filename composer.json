@@ -2,7 +2,7 @@
   "name": "fiserv-ipg/php-client",
   "description": "PHP Client for Fiserv APIs",
   "version": "1.0.5",
-  "license": "GPL-3.0-or-later",
+  "license": "GPL-2.0-with-classpath-exception",
   "type": "library",
   "require": {
     "ext-curl": "*",
