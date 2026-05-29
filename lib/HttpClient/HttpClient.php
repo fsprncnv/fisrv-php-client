@@ -15,7 +15,7 @@ use stdClass;
 
 abstract class HttpClient
 {
-    private const VERSION = '1.0.5';
+    private const VERSION = '1.0.6';
 
     private const DOMAIN = 'https://prod.emea.api.fiservapps.com';
 
